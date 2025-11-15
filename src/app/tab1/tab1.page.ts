@@ -155,22 +155,43 @@ export class Tab1Page implements OnInit {
   }
 
   buscarLecturas(event: any) {
-    const searchTerm = event.target.value?.toLowerCase() || '';
+    const searchTerm = event.target.value?.toLowerCase().trim() || '';
     
-    if (!searchTerm) {
+    console.log('🔍 Buscando:', searchTerm);
+    
+    // Si el término de búsqueda está vacío, mostrar todas las lecturas
+    if (!searchTerm || searchTerm === '') {
       this.lecturasFiltradas = [...this.lecturas];
+      console.log('✅ Mostrando todas las lecturas:', this.lecturasFiltradas.length);
       return;
     }
 
+    // Filtrar por email del usuario (medidor)
     this.lecturasFiltradas = this.lecturas.filter(lectura => {
-      const email = lectura.profiles?.email?.toLowerCase() || '';
-      const observaciones = lectura.observaciones?.toLowerCase() || '';
-      const valor = lectura.valor_medidor?.toString() || '';
+      const email = (lectura.profiles?.email || lectura.usuario_email || '').toLowerCase();
+      const observaciones = (lectura.observaciones || '').toLowerCase();
+      const valor = (lectura.valor_medidor || '').toString();
       
-      return email.includes(searchTerm) || 
-             observaciones.includes(searchTerm) || 
-             valor.includes(searchTerm);
+      const coincide = email.includes(searchTerm) || 
+                       observaciones.includes(searchTerm) || 
+                       valor.includes(searchTerm);
+      
+      return coincide;
     });
+    
+    console.log('✅ Resultados filtrados:', this.lecturasFiltradas.length);
+    
+    // Mostrar mensaje si no hay resultados
+    if (this.lecturasFiltradas.length === 0) {
+      this.showToast(`No se encontraron resultados para "${searchTerm}"`, 'warning');
+    }
+  }
+
+  // Método adicional para limpiar búsqueda
+  limpiarBusqueda() {
+    this.searchTerm = '';
+    this.lecturasFiltradas = [...this.lecturas];
+    console.log('🔄 Búsqueda limpiada, mostrando todos los registros');
   }
 
   async refrescarLecturas(event: any) {
