@@ -1,0 +1,206 @@
+.content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+}
+
+.stats-card {
+    margin-bottom: 16px;
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+
+        ion-icon {
+            font-size: 32px;
+        }
+
+        .stat-label {
+            margin: 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            margin: 4px 0 0 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+    }
+}
+
+.filter-card {
+    margin-bottom: 20px;
+
+    ion-item {
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        --background: transparent;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    margin-top: 40px;
+
+    ion-icon {
+        opacity: 0.3;
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 16px 0 8px 0;
+    }
+
+    p {
+        margin: 8px 0 24px 0;
+    }
+}
+
+.lectura-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+
+    ion-card-header {
+        padding: 16px;
+        background: linear-gradient(135deg, var(--ion-color-primary-tint) 0%, var(--ion-color-primary) 100%);
+
+        .card-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        ion-card-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .fecha {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            margin: 8px 0 0 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    }
+
+    ion-card-content {
+        padding: 16px;
+    }
+}
+
+.photos-grid {
+    padding: 0;
+    margin-bottom: 16px;
+
+    .photo-item {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+
+        ion-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            color: white;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            p {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+.location-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--ion-color-light);
+    border-radius: 8px;
+    margin-bottom: 12px;
+
+    ion-text p {
+        margin: 0;
+        font-size: 14px;
+
+        &:first-child {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+    }
+}
+
+.observaciones {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--ion-color-primary-tint);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--ion-color-primary);
+
+    ion-text p {
+        margin: 0;
+        font-size: 14px;
+
+        &:first-child {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+    }
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+
+    ion-button {
+        margin: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .photos-grid .photo-item {
+        height: 150px;
+    }
+
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+}

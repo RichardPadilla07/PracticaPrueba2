@@ -1,0 +1,79 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      Login y Registro
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="auth-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title class="ion-text-center">
+          {{ isLogin ? 'Iniciar Sesión' : 'Registrarse' }}
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Email -->
+        <ion-item>
+          <ion-label position="floating">Correo electrónico</ion-label>
+          <ion-input
+            type="email"
+            [(ngModel)]="email"
+            placeholder=""
+            [disabled]="isLoading"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Password -->
+        <ion-item>
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input
+            type="password"
+            [(ngModel)]="password"
+            placeholder=""
+            [disabled]="isLoading"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Selector de Rol (solo para registro) -->
+        <div *ngIf="!isLogin" class="role-selector">
+          <ion-label class="ion-margin-top">Selecciona tu rol:</ion-label>
+          <ion-segment [(ngModel)]="selectedRole" [disabled]="isLoading">
+            <ion-segment-button value="medidor">
+              <ion-label>Medidor</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="administrador">
+              <ion-label>Administrador</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <!-- Botón de Acción -->
+        <ion-button
+          expand="block"
+          (click)="handleAuth()"
+          [disabled]="isLoading"
+          class="ion-margin-top"
+        >
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">
+            {{ isLogin ? 'Iniciar Sesión' : 'Registrarse' }}
+          </span>
+        </ion-button>
+
+        <!-- Toggle entre Login/Registro -->
+        <div class="ion-text-center ion-margin-top">
+          <ion-text color="medium">
+            {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+          </ion-text>
+          <ion-button fill="clear" (click)="toggleMode()" [disabled]="isLoading">
+            {{ isLogin ? 'Regístrate aquí' : 'Inicia sesión' }}
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

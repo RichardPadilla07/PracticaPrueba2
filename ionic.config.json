@@ -1,0 +1,7 @@
+{
+  "name": "repasoex1medidores",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

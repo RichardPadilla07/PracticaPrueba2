@@ -1,0 +1,323 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import '@ionic/angular/css/palettes/dark.system.css';
+
+/* ============================================
+   ESTILOS PERSONALIZADOS DE LA APLICACIÓN
+   ============================================ */
+
+// Estilos para alerts con imágenes
+.image-alert {
+    --max-width: 90vw;
+    --max-height: 90vh;
+
+    .alert-wrapper {
+        max-width: 90vw !important;
+    }
+
+    .alert-message {
+        max-height: 70vh;
+        overflow: auto;
+        padding: 0 !important;
+
+        img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+    }
+}
+
+// Mejorar el contraste de los searchbar
+ion-searchbar {
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Estilos para tarjetas con sombras mejoradas
+ion-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: box-shadow 0.3s ease;
+    }
+}
+
+// Estilos para botones con iconos
+ion-button {
+    ion-icon {
+        pointer-events: none;
+    }
+}
+
+// Mejorar la legibilidad de los inputs
+ion-input,
+ion-textarea {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+}
+
+// Estilos para los refresher
+ion-refresher-content {
+    --color: var(--ion-color-primary);
+}
+
+// Scrollbar personalizado (solo para navegadores webkit)
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ion-color-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--ion-color-medium);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--ion-color-medium-shade);
+}
+
+// Animación suave para elementos que aparecen
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Mejorar el aspecto de los badges
+ion-badge {
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 12px;
+}
+
+// Estilos para los chips
+ion-chip {
+    font-weight: 500;
+
+    ion-icon {
+        margin-right: 4px;
+    }
+}
+
+// Mejorar el aspecto de los items
+ion-item {
+    &.item-has-focus {
+        --highlight-background: var(--ion-color-primary-tint);
+    }
+}
+
+// Estilos para loading personalizado
+ion-loading {
+    --background: var(--ion-color-light);
+    --spinner-color: var(--ion-color-primary);
+
+    .loading-wrapper {
+        border-radius: 12px;
+    }
+}
+
+// Estilos para toast personalizados
+ion-toast {
+    &::part(container) {
+        border-radius: 12px;
+    }
+
+    &.toast-success {
+        --background: var(--ion-color-success);
+        --color: white;
+    }
+
+    &.toast-danger {
+        --background: var(--ion-color-danger);
+        --color: white;
+    }
+
+    &.toast-warning {
+        --background: var(--ion-color-warning);
+        --color: white;
+    }
+}
+
+// Mejorar la apariencia de los modals
+ion-modal {
+    --border-radius: 16px;
+
+    &::part(backdrop) {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+    }
+}
+
+// Estilos para action sheets
+ion-action-sheet {
+    .action-sheet-group {
+        border-radius: 16px 16px 0 0;
+    }
+}
+
+// Asegurar que las imágenes no se deformen
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+// Estilos para mejorar la accesibilidad
+*:focus {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+}
+
+button:focus,
+ion-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ion-color-primary-tint);
+}
+
+// Ocultar elementos visualmente pero mantenerlos accesibles para lectores de pantalla
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+// Clases de utilidad personalizadas
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-1 {
+    margin-top: 0.25rem;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.mt-5 {
+    margin-top: 3rem;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-5 {
+    margin-bottom: 3rem;
+}
+
+// Responsive utilities
+@media (max-width: 576px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .hide-on-desktop {
+        display: none !important;
+    }
+}

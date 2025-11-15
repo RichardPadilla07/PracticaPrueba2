@@ -1,0 +1,172 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Registrar Lectura</ion-title>
+    <ion-button slot="end" color="danger" (click)="confirmarCerrarSesion()">
+      <ion-icon slot="icon-only" name="log-out"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="content-wrapper">
+    <!-- Información del usuario -->
+    <ion-card class="user-info">
+      <ion-card-content>
+        <ion-text color="medium">
+          <p><strong>Usuario:</strong> {{ userEmail }}</p>
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Sección de Fotos -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Fotografías</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <!-- Foto del Medidor -->
+            <ion-col size="12" size-md="6">
+              <div class="photo-container">
+                <div class="photo-label">
+                  <ion-icon name="camera"></ion-icon>
+                  <ion-label>Foto del Medidor</ion-label>
+                </div>
+                
+                <div class="photo-preview" [class.has-photo]="lectura.foto_medidor">
+                  <ion-img 
+                    *ngIf="lectura.foto_medidor" 
+                    [src]="lectura.foto_medidor"
+                  ></ion-img>
+                  <div *ngIf="!lectura.foto_medidor" class="photo-placeholder">
+                    <ion-icon name="camera" size="large"></ion-icon>
+                    <p>Sin foto</p>
+                  </div>
+                </div>
+
+                <ion-button 
+                  expand="block" 
+                  (click)="seleccionarFotoMedidor()"
+                  [color]="lectura.foto_medidor ? 'success' : 'primary'"
+                >
+                  <ion-icon slot="start" name="camera"></ion-icon>
+                  {{ lectura.foto_medidor ? 'Cambiar Foto' : 'Agregar Foto' }}
+                </ion-button>
+              </div>
+            </ion-col>
+
+            <!-- Foto de la Fachada -->
+            <ion-col size="12" size-md="6">
+              <div class="photo-container">
+                <div class="photo-label">
+                  <ion-icon name="home"></ion-icon>
+                  <ion-label>Foto de la Fachada</ion-label>
+                </div>
+                
+                <div class="photo-preview" [class.has-photo]="lectura.foto_fachada">
+                  <ion-img 
+                    *ngIf="lectura.foto_fachada" 
+                    [src]="lectura.foto_fachada"
+                  ></ion-img>
+                  <div *ngIf="!lectura.foto_fachada" class="photo-placeholder">
+                    <ion-icon name="home" size="large"></ion-icon>
+                    <p>Sin foto</p>
+                  </div>
+                </div>
+
+                <ion-button 
+                  expand="block" 
+                  (click)="seleccionarFotoFachada()"
+                  [color]="lectura.foto_fachada ? 'success' : 'primary'"
+                >
+                  <ion-icon slot="start" name="camera"></ion-icon>
+                  {{ lectura.foto_fachada ? 'Cambiar Foto' : 'Agregar Foto' }}
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Sección de Ubicación GPS -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Ubicación GPS</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button 
+          expand="block" 
+          (click)="obtenerUbicacion()"
+          [color]="locationObtained ? 'success' : 'primary'"
+        >
+          <ion-icon slot="start" name="locate"></ion-icon>
+          {{ locationObtained ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
+        </ion-button>
+
+        <div *ngIf="locationObtained" class="location-info">
+          <ion-item lines="none">
+            <ion-icon name="checkmark-circle" color="success" slot="start"></ion-icon>
+            <ion-label>
+              <p><strong>Latitud:</strong> {{ lectura.latitud?.toFixed(6) }}</p>
+              <p><strong>Longitud:</strong> {{ lectura.longitud?.toFixed(6) }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            (click)="abrirEnMaps()"
+            class="ion-margin-top"
+          >
+            <ion-icon slot="start" name="location-outline"></ion-icon>
+            Ver en Google Maps
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Sección de Datos del Medidor -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Datos de la Lectura</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Valor del Medidor -->
+        <ion-item>
+          <ion-label position="floating">Valor del Medidor *</ion-label>
+          <ion-input 
+            type="number" 
+            [(ngModel)]="lectura.valor_medidor"
+            placeholder="Ej: 12345"
+            min="0"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Observaciones -->
+        <ion-item>
+          <ion-label position="floating">Observaciones</ion-label>
+          <ion-textarea 
+            [(ngModel)]="lectura.observaciones"
+            placeholder="Ingrese cualquier observación relevante (opcional)"
+            rows="4"
+            maxlength="500"
+          ></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón de Guardar -->
+    <ion-button 
+      expand="block" 
+      color="success" 
+      size="large"
+      (click)="guardarLectura()"
+      class="save-button"
+    >
+      <ion-icon slot="start" name="save"></ion-icon>
+      Guardar Lectura
+    </ion-button>
+  </div>
+</ion-content>

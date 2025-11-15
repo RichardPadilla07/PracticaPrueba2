@@ -1,0 +1,33 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
+    padding: 20px;
+
+    ion-card {
+        width: 100%;
+        max-width: 500px;
+        margin: 0;
+    }
+}
+
+.role-selector {
+    margin-top: 20px;
+
+    ion-label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    ion-segment {
+        margin-bottom: 10px;
+    }
+}
+
+ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    margin-bottom: 15px;
+}

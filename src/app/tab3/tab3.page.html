@@ -1,0 +1,201 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      {{ userRole === 'administrador' ? 'Todas las Lecturas' : 'Mis Lecturas' }}
+    </ion-title>
+    <ion-button slot="end" color="danger" (click)="confirmarCerrarSesion()">
+      <ion-icon slot="icon-only" name="log-out"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+  
+  <!-- Barra de búsqueda y filtros -->
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="buscar($event)"
+      placeholder="Buscar por valor, fecha, observaciones..."
+      animated="true"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="refrescarLecturas($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="content-wrapper ion-padding">
+    <!-- Información del usuario y estadísticas -->
+    <ion-card class="stats-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <div class="stat-item">
+                <ion-icon name="person" color="primary"></ion-icon>
+                <div>
+                  <ion-text color="medium">
+                    <p class="stat-label">Usuario</p>
+                  </ion-text>
+                  <ion-text>
+                    <p class="stat-value">{{ userEmail }}</p>
+                  </ion-text>
+                </div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item">
+                <ion-icon name="water" color="primary"></ion-icon>
+                <div>
+                  <ion-text color="medium">
+                    <p class="stat-label">Total Lecturas</p>
+                  </ion-text>
+                  <ion-text>
+                    <p class="stat-value">{{ lecturasFiltradas.length }}</p>
+                  </ion-text>
+                </div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item">
+                <ion-badge [color]="userRole === 'administrador' ? 'warning' : 'success'">
+                  {{ userRole === 'administrador' ? 'Administrador' : 'Medidor' }}
+                </ion-badge>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Filtro de ordenamiento -->
+    <ion-card class="filter-card">
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-icon name="filter" slot="start" color="primary"></ion-icon>
+          <ion-label>Ordenar por:</ion-label>
+          <ion-select
+            [(ngModel)]="ordenamiento"
+            (ionChange)="cambiarOrdenamiento($event)"
+            interface="popover"
+          >
+            <ion-select-option value="recientes">Más recientes</ion-select-option>
+            <ion-select-option value="antiguos">Más antiguos</ion-select-option>
+            <ion-select-option value="valor_desc">Valor mayor</ion-select-option>
+            <ion-select-option value="valor_asc">Valor menor</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Mensaje si no hay lecturas -->
+    <ion-card *ngIf="lecturasFiltradas.length === 0" class="empty-state">
+      <ion-card-content>
+        <ion-icon name="water" size="large" color="medium"></ion-icon>
+        <h2>No hay lecturas disponibles</h2>
+        <p *ngIf="searchTerm">No se encontraron resultados para tu búsqueda</p>
+        <p *ngIf="!searchTerm">Aún no se han registrado lecturas</p>
+        <ion-button *ngIf="!searchTerm && userRole !== 'administrador'" routerLink="/tabs/tab2" expand="block">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Registrar Primera Lectura
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Lista de lecturas -->
+    <ion-card *ngFor="let lectura of lecturasFiltradas" class="lectura-card">
+      <ion-card-header>
+        <div class="card-header-content">
+          <div>
+            <ion-card-title>
+              <ion-icon name="water"></ion-icon>
+              Medidor: {{ lectura.valor_medidor }}
+            </ion-card-title>
+            <ion-text color="medium">
+              <p class="fecha">
+                <ion-icon name="calendar"></ion-icon>
+                {{ formatearFecha(lectura.created_at) }} - {{ formatearHora(lectura.created_at) }}
+              </p>
+            </ion-text>
+          </div>
+          <ion-chip *ngIf="userRole === 'administrador' && lectura.profiles" color="primary">
+            <ion-icon name="person"></ion-icon>
+            <ion-label>{{ lectura.profiles.email }}</ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Fotos -->
+        <ion-grid class="photos-grid">
+          <ion-row>
+            <ion-col size="6">
+              <div class="photo-item" (click)="verImagen(lectura.foto_medidor, 'del Medidor')">
+                <ion-img [src]="lectura.foto_medidor"></ion-img>
+                <div class="photo-overlay">
+                  <ion-icon name="camera"></ion-icon>
+                  <p>Medidor</p>
+                </div>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="photo-item" (click)="verImagen(lectura.foto_fachada, 'de la Fachada')">
+                <ion-img [src]="lectura.foto_fachada"></ion-img>
+                <div class="photo-overlay">
+                  <ion-icon name="home"></ion-icon>
+                  <p>Fachada</p>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Ubicación -->
+        <div class="location-info">
+          <ion-icon name="location" color="danger"></ion-icon>
+          <div>
+            <ion-text>
+              <p><strong>Ubicación GPS:</strong></p>
+              <p class="coordinates">
+                Lat: {{ lectura.latitud.toFixed(6) }}, 
+                Lon: {{ lectura.longitud.toFixed(6) }}
+              </p>
+            </ion-text>
+          </div>
+        </div>
+
+        <!-- Observaciones si existen -->
+        <div *ngIf="lectura.observaciones" class="observaciones">
+          <ion-icon name="information-circle" color="primary"></ion-icon>
+          <div>
+            <ion-text>
+              <p><strong>Observaciones:</strong></p>
+              <p>{{ lectura.observaciones }}</p>
+            </ion-text>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            (click)="abrirEnMaps(lectura.latitud, lectura.longitud)"
+          >
+            <ion-icon slot="start" name="map"></ion-icon>
+            Ver en Maps
+          </ion-button>
+          <ion-button 
+            expand="block" 
+            fill="solid" 
+            (click)="verDetalles(lectura)"
+          >
+            <ion-icon slot="start" name="eye"></ion-icon>
+            Ver Detalles
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
