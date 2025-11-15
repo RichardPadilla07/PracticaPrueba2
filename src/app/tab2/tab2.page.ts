@@ -1,10 +1,10 @@
 // filepath: c:\movilas25b\repasoex1medidores\src\app\tab2\tab2.page.ts
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -14,13 +14,8 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonItem,
-  IonLabel,
   IonButton,
   IonIcon,
-  IonGrid,
-  IonRow,
-  IonCol,
   IonImg,
   IonText,
   LoadingController,
@@ -28,9 +23,9 @@ import {
   AlertController,
   ActionSheetController
 } from '@ionic/angular/standalone';
-import { SupabaseService } from '../core/supabase';
 import { addIcons } from 'ionicons';
 import { logOut, camera, locate, checkmarkCircle } from 'ionicons/icons';
+import { SupabaseService } from '../core/supabase';
 
 interface LecturaParte1 {
   foto_medidor: string | null;
@@ -54,15 +49,11 @@ interface LecturaParte1 {
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonItem,
-    IonLabel,
     IonButton,
     IonIcon,
-    IonGrid,
-    IonRow,
-    IonCol,
     IonImg,
-    IonText
+    IonText,
+    // Elimina IonFab e IonFabButton si no los usas
   ],
 })
 export class Tab2Page implements OnInit {
@@ -72,7 +63,7 @@ export class Tab2Page implements OnInit {
     longitud: null
   };
 
-  locationObtained = false;
+  ubicacionObtenida = false;
   userEmail = '';
   userRole: string | null = null;
 
@@ -167,20 +158,22 @@ export class Tab2Page implements OnInit {
   }
 
   async obtenerUbicacion() {
+    const loading = await this.loadingController.create({
+      message: 'Obteniendo ubicación...'
+    });
+    
     try {
+      await loading.present();
+      
       // Primero solicitar permisos
       const permissions = await Geolocation.requestPermissions();
       console.log('Permisos de ubicación:', permissions);
 
       if (permissions.location === 'denied') {
+        await loading.dismiss();
         await this.showToast('Necesitas activar los permisos de ubicación', 'warning');
         return;
       }
-
-      const loading = await this.loadingController.create({
-        message: 'Obteniendo ubicación...'
-      });
-      await loading.present();
 
       // Obtener ubicación con opciones mejoradas
       const coordinates = await Geolocation.getCurrentPosition({
@@ -191,14 +184,18 @@ export class Tab2Page implements OnInit {
 
       this.lectura.latitud = coordinates.coords.latitude;
       this.lectura.longitud = coordinates.coords.longitude;
-      this.locationObtained = true;
+      this.ubicacionObtenida = true; // Corregido aquí
+
+      await loading.dismiss();
       await this.showToast('Ubicación obtenida correctamente', 'success');
       
       console.log('📍 Ubicación obtenida:', {
         lat: this.lectura.latitud,
         lng: this.lectura.longitud
       });
+
     } catch (error: any) {
+      await loading.dismiss();
       console.error('❌ Error al obtener ubicación:', error);
       
       let mensaje = 'Error al obtener la ubicación';
@@ -215,7 +212,7 @@ export class Tab2Page implements OnInit {
     }
   }
 
-  abrirEnMaps() {
+  verEnMapa() {
     if (this.lectura.latitud && this.lectura.longitud) {
       const url = `https://www.google.com/maps?q=${this.lectura.latitud},${this.lectura.longitud}`;
       window.open(url, '_blank');

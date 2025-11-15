@@ -56,28 +56,17 @@
         <ion-button 
           expand="block"
           (click)="obtenerUbicacion()"
-          [color]="locationObtained ? 'success' : 'primary'"
+          [color]="ubicacionObtenida ? 'success' : 'primary'"
         >
           <ion-icon slot="start" name="locate"></ion-icon>
-          {{ locationObtained ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
+          {{ ubicacionObtenida ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
         </ion-button>
 
-        <div *ngIf="locationObtained" class="location-info ion-margin-top">
-          <ion-item>
-            <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
-            <ion-label>
-              <h3>Ubicación Registrada</h3>
-              <p>Latitud: {{ lectura.latitud?.toFixed(6) }}</p>
-              <p>Longitud: {{ lectura.longitud?.toFixed(6) }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-button 
-            expand="block" 
-            fill="outline" 
-            (click)="abrirEnMaps()"
-            class="ion-margin-top"
-          >
-            <ion-icon slot="start" name="map"></ion-icon>
+        <div *ngIf="ubicacionObtenida" class="location-info ion-margin-top">
+          <h4>Ubicación Registrada</h4>
+          <p>Latitud: {{ lectura.latitud }}</p>
+          <p>Longitud: {{ lectura.longitud }}</p>
+          <ion-button size="small" fill="outline" (click)="verEnMapa()">
             Ver en Google Maps
           </ion-button>
         </div>
@@ -107,5 +96,24 @@
       <ion-icon slot="start" name="arrow-forward"></ion-icon>
       Continuar al Paso 2
     </ion-button>
+
+    <!-- Botón para obtener ubicación -->
+    <ion-button 
+      expand="block" 
+      (click)="obtenerUbicacion()"
+      [color]="ubicacionObtenida ? 'success' : 'primary'"
+      class="ion-margin-top">
+      <ion-icon slot="start" [name]="ubicacionObtenida ? 'checkmark-circle' : 'locate'"></ion-icon>
+      {{ ubicacionObtenida ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
+    </ion-button>
+
+    <div *ngIf="ubicacionObtenida" class="location-info ion-margin-top">
+      <h4>Ubicación Registrada</h4>
+      <p>Latitud: {{ lectura.latitud }}</p>
+      <p>Longitud: {{ lectura.longitud }}</p>
+      <ion-button size="small" fill="outline" (click)="verEnMapa()">
+        Ver en Google Maps
+      </ion-button>
+    </div>
   </div>
 </ion-content>
