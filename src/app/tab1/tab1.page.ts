@@ -34,6 +34,7 @@ import { logOut, locationOutline, calendarOutline, personOutline } from 'ionicon
 interface Lectura {
   id: string;
   user_id: string;
+  usuario_email: string;
   foto_medidor: string;
   foto_fachada: string;
   valor_medidor: number;
@@ -41,6 +42,7 @@ interface Lectura {
   latitud: number;
   longitud: number;
   created_at: string;
+  fecha_creacion: string;
   profiles?: {
     email: string;
     role: string;
@@ -124,8 +126,28 @@ export class Tab1Page implements OnInit {
 
   async cargarTodasLasLecturas() {
     try {
-      this.lecturas = await this.supabaseService.getTodasLasLecturas();
+      const data = await this.supabaseService.getTodasLasLecturas();
+      
+      console.log('📊 Lecturas cargadas:', data);
+      
+      this.lecturas = data.map((lectura: any) => ({
+        id: lectura.id,
+        user_id: lectura.user_id,
+        usuario_email: lectura.users?.email || 'Usuario desconocido',
+        valor_medidor: lectura.meter_value,
+        observaciones: lectura.observations || 'Sin observaciones',
+        foto_medidor: lectura.meter_photo_url,
+        foto_fachada: lectura.facade_photo_url,
+        latitud: lectura.latitude,
+        longitud: lectura.longitude,
+        created_at: lectura.created_at,
+        fecha_creacion: lectura.created_at,
+        profiles: lectura.users
+      }));
+      
       this.lecturasFiltradas = [...this.lecturas];
+      console.log('✅ Lecturas procesadas:', this.lecturasFiltradas);
+      
     } catch (error) {
       console.error('Error al cargar lecturas:', error);
       await this.showToast('Error al cargar las lecturas', 'danger');

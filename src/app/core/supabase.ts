@@ -53,7 +53,24 @@ export class SupabaseService {
         }
       }
     });
+    
     if (error) throw error;
+    
+    // Insertar manualmente en la tabla users
+    if (data.user) {
+      const { error: insertError } = await this.supabase
+        .from('users')
+        .insert([{
+          id: data.user.id,
+          email: data.user.email,
+          role: role
+        }]);
+      
+      if (insertError && insertError.code !== '23505') {
+        console.error('Error al insertar en users:', insertError);
+      }
+    }
+    
     return data;
   }
 
@@ -139,15 +156,50 @@ export class SupabaseService {
     const userId = this.userId;
     if (!userId) throw new Error('Usuario no autenticado');
 
-    // Obtener el user_id de la tabla users
-    const userData = await this.getUserFromTable(userId);
-    if (!userData) throw new Error('Usuario no encontrado en la tabla users');
+    // Verificar si el usuario existe en la tabla users
+    const { data: userData, error: userError } = await this.supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (userError || !userData) {
+      console.log('⚠️ Usuario no existe en tabla users, creándolo...');
+      const currentUser = await this.getCurrentUser();
+      
+      if (currentUser) {
+        const userMetadata = currentUser.user_metadata as { role?: string };
+        const userRole = userMetadata?.['role'] || 'medidor';
+        
+        const { data: newUser, error: insertError } = await this.supabase
+          .from('users')
+          .insert([{
+            id: currentUser.id,
+            email: currentUser.email,
+            role: userRole
+          }])
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error('Error al crear usuario en tabla:', insertError);
+          throw new Error('No se pudo crear el usuario en la tabla users');
+        }
+        
+        console.log('✅ Usuario creado:', newUser);
+      } else {
+        throw new Error('No se pudo obtener el usuario actual');
+      }
+    } else {
+      console.log('✅ Usuario encontrado:', userData);
+    }
 
+    // Insertar la lectura
     const { data, error } = await this.supabase
       .from('readings')
       .insert([
         {
-          user_id: userData.id,
+          user_id: userId,
           meter_photo_url: lectura.meter_photo_url,
           facade_photo_url: lectura.facade_photo_url,
           meter_value: lectura.meter_value,
@@ -159,7 +211,12 @@ export class SupabaseService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error al insertar lectura:', error);
+      throw error;
+    }
+    
+    console.log('✅ Lectura guardada:', data);
     return data;
   }
 
