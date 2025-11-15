@@ -1,5 +1,7 @@
 // filepath: c:\movilas25b\repasoex1medidores\src\app\tab2\tab2.page.ts
 import { Component, OnInit } from '@angular/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Geolocation } from '@capacitor/geolocation';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,8 +31,6 @@ import {
 import { SupabaseService } from '../core/supabase';
 import { addIcons } from 'ionicons';
 import { logOut, camera, locate, checkmarkCircle } from 'ionicons/icons';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { Geolocation } from '@capacitor/geolocation';
 
 interface LecturaParte1 {
   foto_medidor: string | null;
@@ -167,22 +167,51 @@ export class Tab2Page implements OnInit {
   }
 
   async obtenerUbicacion() {
-    const loading = await this.loadingController.create({
-      message: 'Obteniendo ubicación...'
-    });
-    await loading.present();
-
     try {
-      const coordinates = await Geolocation.getCurrentPosition();
+      // Primero solicitar permisos
+      const permissions = await Geolocation.requestPermissions();
+      console.log('Permisos de ubicación:', permissions);
+
+      if (permissions.location === 'denied') {
+        await this.showToast('Necesitas activar los permisos de ubicación', 'warning');
+        return;
+      }
+
+      const loading = await this.loadingController.create({
+        message: 'Obteniendo ubicación...'
+      });
+      await loading.present();
+
+      // Obtener ubicación con opciones mejoradas
+      const coordinates = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+
       this.lectura.latitud = coordinates.coords.latitude;
       this.lectura.longitud = coordinates.coords.longitude;
       this.locationObtained = true;
       await this.showToast('Ubicación obtenida correctamente', 'success');
-    } catch (error) {
-      console.error('Error al obtener ubicación:', error);
-      await this.showToast('Error al obtener la ubicación. Verifica los permisos de GPS', 'danger');
-    } finally {
-      await loading.dismiss();
+      
+      console.log('📍 Ubicación obtenida:', {
+        lat: this.lectura.latitud,
+        lng: this.lectura.longitud
+      });
+    } catch (error: any) {
+      console.error('❌ Error al obtener ubicación:', error);
+      
+      let mensaje = 'Error al obtener la ubicación';
+      
+      if (error.message?.includes('location services are not enabled')) {
+        mensaje = 'Activa el GPS en tu dispositivo';
+      } else if (error.message?.includes('User denied')) {
+        mensaje = 'Debes permitir el acceso a la ubicación';
+      } else if (error.message?.includes('timeout')) {
+        mensaje = 'No se pudo obtener la ubicación. Intenta de nuevo';
+      }
+      
+      await this.showToast(mensaje, 'danger');
     }
   }
 
