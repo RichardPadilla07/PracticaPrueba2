@@ -96,8 +96,15 @@ export class Tab3Page implements OnInit {
   }
 
   async ngOnInit() {
+    console.log('🔄 Tab3 - ngOnInit iniciado');
     await this.verificarRol();
     await this.cargarDatosUsuario();
+    this.cargarDatosParte1();
+  }
+
+  // También agregar ionViewWillEnter para que se ejecute cada vez que entras al tab
+  ionViewWillEnter() {
+    console.log('🔄 Tab3 - ionViewWillEnter');
     this.cargarDatosParte1();
   }
 
@@ -116,14 +123,39 @@ export class Tab3Page implements OnInit {
   }
 
   cargarDatosParte1() {
+    console.log('=== 🔍 Cargando datos del Paso 1 ===');
     const datos = localStorage.getItem('lecturaParte1');
+    console.log('📦 Datos raw del localStorage:', datos);
+    
     if (datos) {
-      const parte1 = JSON.parse(datos);
-      this.lectura.foto_medidor = parte1.foto_medidor;
-      this.lectura.latitud = parte1.latitud;
-      this.lectura.longitud = parte1.longitud;
-      this.datosParte1Cargados = true;
+      try {
+        const parte1 = JSON.parse(datos);
+        console.log('✅ Datos parseados:', parte1);
+        
+        if (parte1.foto_medidor && parte1.latitud !== undefined && parte1.longitud !== undefined) {
+          this.lectura.foto_medidor = parte1.foto_medidor;
+          this.lectura.latitud = parte1.latitud;
+          this.lectura.longitud = parte1.longitud;
+          this.datosParte1Cargados = true;
+          
+          console.log('✅ Datos cargados exitosamente en lectura:', {
+            foto: this.lectura.foto_medidor.substring(0, 50) + '...',
+            lat: this.lectura.latitud,
+            lng: this.lectura.longitud,
+            cargado: this.datosParte1Cargados
+          });
+        } else {
+          console.error('❌ Datos incompletos:', parte1);
+          this.showToast('Los datos del paso 1 están incompletos', 'warning');
+          this.router.navigate(['/tabs/tab2']);
+        }
+      } catch (error) {
+        console.error('❌ Error al parsear datos:', error);
+        this.showToast('Error al cargar datos del paso 1', 'danger');
+        this.router.navigate(['/tabs/tab2']);
+      }
     } else {
+      console.log('❌ No hay datos del paso 1 en localStorage');
       this.showToast('Debes completar el paso 1 primero', 'warning');
       this.router.navigate(['/tabs/tab2']);
     }
@@ -233,23 +265,20 @@ export class Tab3Page implements OnInit {
       const fotoFachadaBlob = await this.dataURLtoBlob(this.lectura.foto_fachada);
       const urlFotoFachada = await this.supabaseService.uploadImage(fotoFachadaBlob, userId, 'fachada');
 
-      // Crear registro de lectura
+      // Crear registro de lectura con los nombres correctos de la BD
       await this.supabaseService.createLectura({
-        foto_medidor: urlFotoMedidor,
-        foto_fachada: urlFotoFachada,
-        valor_medidor: this.lectura.valor_medidor!,
-        observaciones: this.lectura.observaciones,
-        latitud: this.lectura.latitud,
-        longitud: this.lectura.longitud
+        meter_photo_url: urlFotoMedidor,
+        facade_photo_url: urlFotoFachada,
+        meter_value: this.lectura.valor_medidor!,
+        observations: this.lectura.observaciones,
+        latitude: this.lectura.latitud,
+        longitude: this.lectura.longitud
       });
 
       await loading.dismiss();
       await this.showToast('Lectura guardada exitosamente', 'success');
       
-      // Limpiar datos del localStorage
       localStorage.removeItem('lecturaParte1');
-      
-      // Volver al tab2
       this.router.navigate(['/tabs/tab2']);
       this.limpiarFormulario();
       

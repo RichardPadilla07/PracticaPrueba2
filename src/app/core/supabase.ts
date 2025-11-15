@@ -13,21 +13,25 @@ export class SupabaseService {
   constructor() {
     this.supabase = createClient(
       environment.supabase.url,
-      environment.supabase.key
+      environment.supabase.key,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+        }
+      }
     );
 
+    this.initializeAuth();
 
-    //SERVICIOS PARA EL TAB 1
-
-    // Verificar sesión actual
-    this.supabase.auth.getSession().then(({ data: { session } }) => {
-      this.currentUser.next(session?.user ?? null);
-    });
-
-    // Escuchar cambios de autenticación
     this.supabase.auth.onAuthStateChange((event, session) => {
       this.currentUser.next(session?.user ?? null);
     });
+  }
+
+  private async initializeAuth() {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    this.currentUser.next(session?.user ?? null);
   }
 
   get user$(): Observable<User | null> {
@@ -66,27 +70,37 @@ export class SupabaseService {
   // Cerrar sesión
   async signOut() {
     const { error } = await this.supabase.auth.signOut();
+    this.currentUser.next(null);
     if (error) throw error;
   }
 
-  // Obtener perfil del usuario
-  async getProfile(userId: string) {
+  // Obtener usuario de la tabla users
+  async getUserFromTable(userId: string) {
     const { data, error } = await this.supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single();
-    if (error) throw error;
+    
+    if (error) {
+      console.error('Error al obtener usuario:', error);
+      return null;
+    }
     return data;
   }
 
   // Obtener rol del usuario actual
   async getCurrentUserRole(): Promise<string | null> {
-    const userId = this.userId;
-    if (!userId) return null;
+    try {
+      const user = await this.getCurrentUser();
+      if (!user) return null;
 
-    const profile = await this.getProfile(userId);
-    return profile?.role ?? null;
+      const userData = await this.getUserFromTable(user.id);
+      return userData?.role ?? 'medidor';
+    } catch (error) {
+      console.error('Error al obtener rol:', error);
+      return 'medidor';
+    }
   }
 
   async getCurrentUser() {
@@ -94,7 +108,6 @@ export class SupabaseService {
     return user;
   }
 
-  //SERVICIOS PARA EL TAB 2
   // Subir imagen a Supabase Storage
   async uploadImage(file: Blob, userId: string, tipo: 'medidor' | 'fachada'): Promise<string> {
     const fileName = `${userId}/${tipo}_${Date.now()}.jpg`;
@@ -107,7 +120,6 @@ export class SupabaseService {
 
     if (error) throw error;
 
-    // Obtener URL pública de la imagen
     const { data: urlData } = this.supabase.storage
       .from('medidores-fotos')
       .getPublicUrl(fileName);
@@ -115,24 +127,33 @@ export class SupabaseService {
     return urlData.publicUrl;
   }
 
-  // Crear nueva lectura
+  // Crear nueva lectura en la tabla readings
   async createLectura(lectura: {
-    foto_medidor: string;
-    foto_fachada: string;
-    valor_medidor: number;
-    observaciones: string;
-    latitud: number;
-    longitud: number;
+    meter_photo_url?: string;
+    facade_photo_url?: string;
+    meter_value: number;
+    observations: string;
+    latitude: number;
+    longitude: number;
   }) {
     const userId = this.userId;
     if (!userId) throw new Error('Usuario no autenticado');
 
+    // Obtener el user_id de la tabla users
+    const userData = await this.getUserFromTable(userId);
+    if (!userData) throw new Error('Usuario no encontrado en la tabla users');
+
     const { data, error } = await this.supabase
-      .from('lecturas')
+      .from('readings')
       .insert([
         {
-          user_id: userId,
-          ...lectura
+          user_id: userData.id,
+          meter_photo_url: lectura.meter_photo_url,
+          facade_photo_url: lectura.facade_photo_url,
+          meter_value: lectura.meter_value,
+          observations: lectura.observations,
+          latitude: lectura.latitude,
+          longitude: lectura.longitude
         }
       ])
       .select()
@@ -147,10 +168,13 @@ export class SupabaseService {
     const userId = this.userId;
     if (!userId) throw new Error('Usuario no autenticado');
 
+    const userData = await this.getUserFromTable(userId);
+    if (!userData) throw new Error('Usuario no encontrado');
+
     const { data, error } = await this.supabase
-      .from('lecturas')
+      .from('readings')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', userData.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -160,10 +184,10 @@ export class SupabaseService {
   // Obtener todas las lecturas (solo administradores)
   async getTodasLasLecturas() {
     const { data, error } = await this.supabase
-      .from('lecturas')
+      .from('readings')
       .select(`
         *,
-        profiles:user_id (email, role)
+        users:user_id (email, role)
       `)
       .order('created_at', { ascending: false });
 

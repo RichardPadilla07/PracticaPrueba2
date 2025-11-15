@@ -194,20 +194,36 @@ export class Tab2Page implements OnInit {
   }
 
   async continuarATab3() {
+    // Validar que se haya tomado la foto
     if (!this.lectura.foto_medidor) {
       await this.showToast('Debes tomar la foto del medidor', 'warning');
       return;
     }
 
-    if (!this.lectura.latitud || !this.lectura.longitud) {
+    // Validar que se haya obtenido la ubicación
+    if (!this.lectura.latitud || !this.lectura.longitud || this.lectura.latitud === 0 || this.lectura.longitud === 0) {
       await this.showToast('Debes obtener la ubicación GPS', 'warning');
       return;
     }
 
-    // Guardar datos en localStorage para pasarlos a tab3
-    localStorage.setItem('lecturaParte1', JSON.stringify(this.lectura));
-    this.router.navigate(['/tabs/tab3']);
+    // Guardar datos en localStorage
+    const datosTab2 = {
+      foto_medidor: this.lectura.foto_medidor,
+      latitud: this.lectura.latitud,
+      longitud: this.lectura.longitud
+    };
+    
+    console.log('Guardando datos del paso 1:', datosTab2);
+    localStorage.setItem('lecturaParte1', JSON.stringify(datosTab2));
+    
+    // Verificar que se guardó correctamente
+    const verificar = localStorage.getItem('lecturaParte1');
+    console.log('Datos guardados verificados:', verificar);
+    
     await this.showToast('Continúa completando la lectura en Tab 3', 'success');
+    
+    // Navegar a tab3
+    this.router.navigate(['/tabs/tab3']);
   }
 
   async showToast(message: string, color: string) {
