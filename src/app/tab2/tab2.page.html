@@ -9,7 +9,6 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="content-wrapper">
-    <!-- Información del usuario -->
     <ion-card class="user-info">
       <ion-card-content>
         <ion-text color="medium">
@@ -18,8 +17,6 @@
         </ion-text>
       </ion-card-content>
     </ion-card>
-
-    <!-- Sección de Foto del Medidor -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>
@@ -28,11 +25,8 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-button 
-          expand="block" 
-          (click)="seleccionarFotoMedidor()"
-          [color]="lectura.foto_medidor ? 'success' : 'primary'"
-        >
+        <ion-button expand="block" (click)="seleccionarFotoMedidor()"
+          [color]="lectura.foto_medidor ? 'success' : 'primary'">
           <ion-icon slot="start" name="camera"></ion-icon>
           {{ lectura.foto_medidor ? 'Cambiar Foto' : 'Tomar Foto del Medidor' }}
         </ion-button>
@@ -43,8 +37,6 @@
         </div>
       </ion-card-content>
     </ion-card>
-
-    <!-- Sección de Ubicación GPS -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>
@@ -53,15 +45,10 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-button 
-          expand="block"
-          (click)="obtenerUbicacion()"
-          [color]="ubicacionObtenida ? 'success' : 'primary'"
-        >
+        <ion-button expand="block" (click)="obtenerUbicacion()" [color]="ubicacionObtenida ? 'success' : 'primary'">
           <ion-icon slot="start" name="locate"></ion-icon>
           {{ ubicacionObtenida ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
         </ion-button>
-
         <div *ngIf="ubicacionObtenida" class="location-info ion-margin-top">
           <h4>Ubicación Registrada</h4>
           <p>Latitud: {{ lectura.latitud }}</p>
@@ -73,7 +60,6 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Instrucciones -->
     <ion-card color="light">
       <ion-card-content>
         <ion-text color="medium">
@@ -85,23 +71,13 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Botón de Continuar -->
-    <ion-button 
-      expand="block" 
-      color="success" 
-      size="large"
-      (click)="continuarATab3()"
-      class="ion-margin-top"
-    >
+    <ion-button expand="block" color="success" size="large" (click)="continuarATab3()" class="ion-margin-top">
       <ion-icon slot="start" name="arrow-forward"></ion-icon>
       Continuar al Paso 2
     </ion-button>
 
     <!-- Botón para obtener ubicación -->
-    <ion-button 
-      expand="block" 
-      (click)="obtenerUbicacion()"
-      [color]="ubicacionObtenida ? 'success' : 'primary'"
+    <ion-button expand="block" (click)="obtenerUbicacion()" [color]="ubicacionObtenida ? 'success' : 'primary'"
       class="ion-margin-top">
       <ion-icon slot="start" [name]="ubicacionObtenida ? 'checkmark-circle' : 'locate'"></ion-icon>
       {{ ubicacionObtenida ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}

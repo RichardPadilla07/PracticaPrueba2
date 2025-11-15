@@ -128,7 +128,7 @@ export class Tab1Page implements OnInit {
     try {
       const data = await this.supabaseService.getTodasLasLecturas();
       
-      console.log('📊 Lecturas cargadas:', data);
+      console.log('Lecturas cargadas:', data);
       
       this.lecturas = data.map((lectura: any) => ({
         id: lectura.id,
@@ -146,7 +146,7 @@ export class Tab1Page implements OnInit {
       }));
       
       this.lecturasFiltradas = [...this.lecturas];
-      console.log('✅ Lecturas procesadas:', this.lecturasFiltradas);
+      console.log('Lecturas procesadas:', this.lecturasFiltradas);
       
     } catch (error) {
       console.error('Error al cargar lecturas:', error);

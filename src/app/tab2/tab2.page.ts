@@ -53,7 +53,6 @@ interface LecturaParte1 {
     IonIcon,
     IonImg,
     IonText,
-    // Elimina IonFab e IonFabButton si no los usas
   ],
 })
 export class Tab2Page implements OnInit {
@@ -85,7 +84,7 @@ export class Tab2Page implements OnInit {
 
   async verificarRol() {
     this.userRole = await this.supabaseService.getCurrentUserRole();
-    
+
     if (this.userRole === 'administrador') {
       await this.showToast('Los administradores no pueden registrar lecturas', 'warning');
       this.router.navigate(['/tabs/tab1']);
@@ -161,10 +160,10 @@ export class Tab2Page implements OnInit {
     const loading = await this.loadingController.create({
       message: 'Obteniendo ubicación...'
     });
-    
+
     try {
       await loading.present();
-      
+
       // Primero solicitar permisos
       const permissions = await Geolocation.requestPermissions();
       console.log('Permisos de ubicación:', permissions);
@@ -175,7 +174,7 @@ export class Tab2Page implements OnInit {
         return;
       }
 
-      // Obtener ubicación con opciones mejoradas
+      // Obtener ubicación
       const coordinates = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -184,11 +183,11 @@ export class Tab2Page implements OnInit {
 
       this.lectura.latitud = coordinates.coords.latitude;
       this.lectura.longitud = coordinates.coords.longitude;
-      this.ubicacionObtenida = true; // Corregido aquí
+      this.ubicacionObtenida = true;
 
       await loading.dismiss();
       await this.showToast('Ubicación obtenida correctamente', 'success');
-      
+
       console.log('📍 Ubicación obtenida:', {
         lat: this.lectura.latitud,
         lng: this.lectura.longitud
@@ -196,10 +195,10 @@ export class Tab2Page implements OnInit {
 
     } catch (error: any) {
       await loading.dismiss();
-      console.error('❌ Error al obtener ubicación:', error);
-      
+      console.error('Error al obtener ubicación:', error);
+
       let mensaje = 'Error al obtener la ubicación';
-      
+
       if (error.message?.includes('location services are not enabled')) {
         mensaje = 'Activa el GPS en tu dispositivo';
       } else if (error.message?.includes('User denied')) {
@@ -207,7 +206,7 @@ export class Tab2Page implements OnInit {
       } else if (error.message?.includes('timeout')) {
         mensaje = 'No se pudo obtener la ubicación. Intenta de nuevo';
       }
-      
+
       await this.showToast(mensaje, 'danger');
     }
   }
@@ -220,35 +219,27 @@ export class Tab2Page implements OnInit {
   }
 
   async continuarATab3() {
-    // Validar que se haya tomado la foto
     if (!this.lectura.foto_medidor) {
       await this.showToast('Debes tomar la foto del medidor', 'warning');
       return;
     }
-
-    // Validar que se haya obtenido la ubicación
     if (!this.lectura.latitud || !this.lectura.longitud || this.lectura.latitud === 0 || this.lectura.longitud === 0) {
       await this.showToast('Debes obtener la ubicación GPS', 'warning');
       return;
     }
-
-    // Guardar datos en localStorage
     const datosTab2 = {
       foto_medidor: this.lectura.foto_medidor,
       latitud: this.lectura.latitud,
       longitud: this.lectura.longitud
     };
-    
+
     console.log('Guardando datos del paso 1:', datosTab2);
     localStorage.setItem('lecturaParte1', JSON.stringify(datosTab2));
-    
-    // Verificar que se guardó correctamente
+
     const verificar = localStorage.getItem('lecturaParte1');
     console.log('Datos guardados verificados:', verificar);
-    
+
     await this.showToast('Continúa completando la lectura en Tab 3', 'success');
-    
-    // Navegar a tab3
     this.router.navigate(['/tabs/tab3']);
   }
 

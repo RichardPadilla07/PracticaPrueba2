@@ -62,10 +62,9 @@ export class LoginPage implements OnInit {
     private router: Router,
     private loadingController: LoadingController,
     private toastController: ToastController
-  ) {}
+  ) { }
 
   async ngOnInit() {
-    // Verificar si ya hay una sesión activa al cargar la página
     const user = await this.supabaseService.getCurrentUser();
     if (user) {
       this.router.navigate(['/tabs/tab1']);

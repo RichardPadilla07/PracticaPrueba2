@@ -16,29 +16,14 @@
       </ion-card-header>
 
       <ion-card-content>
-        <!-- Email -->
         <ion-item>
           <ion-label position="floating">Correo electrónico</ion-label>
-          <ion-input
-            type="email"
-            [(ngModel)]="email"
-            placeholder=""
-            [disabled]="isLoading"
-          ></ion-input>
+          <ion-input type="email" [(ngModel)]="email" placeholder="" [disabled]="isLoading"></ion-input>
         </ion-item>
-
-        <!-- Password -->
         <ion-item>
           <ion-label position="floating">Contraseña</ion-label>
-          <ion-input
-            type="password"
-            [(ngModel)]="password"
-            placeholder=""
-            [disabled]="isLoading"
-          ></ion-input>
+          <ion-input type="password" [(ngModel)]="password" placeholder="" [disabled]="isLoading"></ion-input>
         </ion-item>
-
-        <!-- Selector de Rol (solo para registro) -->
         <div *ngIf="!isLogin" class="role-selector">
           <ion-label class="ion-margin-top">Selecciona tu rol:</ion-label>
           <ion-segment [(ngModel)]="selectedRole" [disabled]="isLoading">
@@ -51,20 +36,12 @@
           </ion-segment>
         </div>
 
-        <!-- Botón de Acción -->
-        <ion-button
-          expand="block"
-          (click)="handleAuth()"
-          [disabled]="isLoading"
-          class="ion-margin-top"
-        >
+        <ion-button expand="block" (click)="handleAuth()" [disabled]="isLoading" class="ion-margin-top">
           <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
           <span *ngIf="!isLoading">
             {{ isLogin ? 'Iniciar Sesión' : 'Registrarse' }}
           </span>
         </ion-button>
-
-        <!-- Toggle entre Login/Registro -->
         <div class="ion-text-center ion-margin-top">
           <ion-text color="medium">
             {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}

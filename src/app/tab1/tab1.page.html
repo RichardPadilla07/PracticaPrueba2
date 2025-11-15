@@ -5,8 +5,7 @@
       <ion-icon slot="icon-only" name="log-out"></ion-icon>
     </ion-button>
   </ion-toolbar>
-  
-  <!-- Barra de búsqueda -->
+
   <ion-toolbar>
     <ion-searchbar
       animated="true"
@@ -17,13 +16,11 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Pull to refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="refrescarLecturas($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
   <div class="content-wrapper ion-padding">
-    <!-- Estadísticas -->
     <ion-card class="stats-card">
       <ion-card-content>
         <ion-grid>
@@ -38,7 +35,6 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Mensaje si no hay lecturas -->
     <ion-card *ngIf="lecturasFiltradas.length === 0" class="empty-state">
       <ion-card-content class="ion-text-center">
         <ion-icon name="document-text-outline" size="large" color="medium"></ion-icon>
@@ -47,7 +43,6 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Lista de lecturas -->
     <ion-card *ngFor="let lectura of lecturasFiltradas" class="lectura-card">
       <ion-card-header>
         <ion-grid>
@@ -63,7 +58,6 @@
       </ion-card-header>
 
       <ion-card-content>
-        <!-- Fotos -->
         <ion-grid>
           <ion-row>
             <ion-col size="6">
@@ -81,7 +75,6 @@
           </ion-row>
         </ion-grid>
 
-        <!-- Información -->
         <ion-item lines="none">
           <ion-label>
             <h3><strong>Valor del Medidor</strong></h3>
@@ -96,7 +89,6 @@
           </ion-label>
         </ion-item>
 
-        <!-- Ubicación -->
         <ion-item lines="none" button (click)="abrirEnMaps(lectura.latitud, lectura.longitud)">
           <ion-icon name="location-outline" slot="start" color="danger"></ion-icon>
           <ion-label>
@@ -107,7 +99,6 @@
           <ion-badge slot="end" color="danger">Ver en Mapa</ion-badge>
         </ion-item>
 
-        <!-- Fecha -->
         <ion-item lines="none">
           <ion-icon name="calendar-outline" slot="start" color="medium"></ion-icon>
           <ion-label>
