@@ -233,13 +233,13 @@ export class Tab2Page implements OnInit {
       longitud: this.lectura.longitud
     };
 
-    console.log('Guardando datos del paso 1:', datosTab2);
+    console.log('Guardando datos capturados:', datosTab2);
     localStorage.setItem('lecturaParte1', JSON.stringify(datosTab2));
 
     const verificar = localStorage.getItem('lecturaParte1');
     console.log('Datos guardados verificados:', verificar);
 
-    await this.showToast('Continúa completando la lectura en Tab 3', 'success');
+    await this.showToast('Continúa agregando datos adicionales', 'success');
     this.router.navigate(['/tabs/tab3']);
   }
 

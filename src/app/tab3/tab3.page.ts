@@ -122,9 +122,9 @@ export class Tab3Page implements OnInit {
   }
 
   cargarDatosParte1() {
-    console.log('=== Cargando datos del Paso 1 ===');
+    console.log('=== Cargando datos capturados ===');
     const datos = localStorage.getItem('lecturaParte1');
-    console.log('📦 Datos raw del localStorage:', datos);
+    console.log('Datos raw del localStorage:', datos);
 
     if (datos) {
       try {
@@ -137,7 +137,7 @@ export class Tab3Page implements OnInit {
           this.lectura.longitud = parte1.longitud;
           this.datosParte1Cargados = true;
 
-          console.log('Datos cargados exitosamente en lectura:', {
+          console.log('Datos cargados exitosamente:', {
             foto: this.lectura.foto_medidor.substring(0, 50) + '...',
             lat: this.lectura.latitud,
             lng: this.lectura.longitud,
@@ -145,17 +145,17 @@ export class Tab3Page implements OnInit {
           });
         } else {
           console.error('Datos incompletos:', parte1);
-          this.showToast('Los datos del paso 1 están incompletos', 'warning');
+          this.showToast('Los datos capturados están incompletos', 'warning');
           this.router.navigate(['/tabs/tab2']);
         }
       } catch (error) {
         console.error('Error al parsear datos:', error);
-        this.showToast('Error al cargar datos del paso 1', 'danger');
+        this.showToast('Error al cargar datos capturados', 'danger');
         this.router.navigate(['/tabs/tab2']);
       }
     } else {
-      console.log('No hay datos del paso 1 en localStorage');
-      this.showToast('Debes completar el paso 1 primero', 'warning');
+      console.log('No hay datos capturados en localStorage');
+      this.showToast('Debes completar capturar datos primero', 'warning');
       this.router.navigate(['/tabs/tab2']);
     }
   }
@@ -227,7 +227,7 @@ export class Tab3Page implements OnInit {
 
     const alert = await this.alertController.create({
       header: 'Confirmar Registro',
-      message: '¿Estás seguro de guardar esta lectura?',
+      message: '¿Estás seguro de guardar estos datos?',
       buttons: [
         {
           text: 'Cancelar',
@@ -246,7 +246,7 @@ export class Tab3Page implements OnInit {
 
   async procesarGuardado() {
     const loading = await this.loadingController.create({
-      message: 'Guardando lectura...'
+      message: 'Guardando datos...'
     });
     await loading.present();
 
@@ -274,7 +274,7 @@ export class Tab3Page implements OnInit {
       });
 
       await loading.dismiss();
-      await this.showToast('Lectura guardada exitosamente', 'success');
+      await this.showToast('Datos guardados exitosamente', 'success');
 
       localStorage.removeItem('lecturaParte1');
       this.router.navigate(['/tabs/tab2']);
@@ -283,7 +283,7 @@ export class Tab3Page implements OnInit {
     } catch (error: any) {
       await loading.dismiss();
       console.error('Error al guardar:', error);
-      await this.showToast(error.message || 'Error al guardar la lectura', 'danger');
+      await this.showToast(error.message || 'Error al guardar los datos', 'danger');
     }
   }
 
