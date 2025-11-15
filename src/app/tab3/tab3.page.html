@@ -3,7 +3,7 @@
     <ion-button slot="start" fill="clear" (click)="volverAPaso1()">
       <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
     </ion-button>
-    <ion-title>Registrar Lectura - Paso 2</ion-title>
+    <ion-title>Agregar datos adicionales</ion-title>
     <ion-button slot="end" color="danger" (click)="confirmarCerrarSesion()">
       <ion-icon slot="icon-only" name="log-out"></ion-icon>
     </ion-button>
@@ -16,7 +16,7 @@
       <ion-card-content>
         <ion-text color="medium">
           <p><strong>Usuario:</strong> {{ userEmail }}</p>
-          <p><strong>Paso 2:</strong> Valor del medidor, observaciones y foto de fachada</p>
+          <p><strong>Funcion:</strong> Valor del medidor, observaciones y foto de fachada</p>
         </ion-text>
       </ion-card-content>
     </ion-card>
@@ -24,7 +24,7 @@
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
-          Datos del Paso 1
+          Datos Capturados Hasta Ahora
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
@@ -39,8 +39,8 @@
             <ion-col size="6">
               <ion-text color="medium">
                 <p><strong>Ubicación GPS:</strong></p>
-                <p>Lat: {{ lectura.latitud?.toFixed(4) }}</p>
-                <p>Lng: {{ lectura.longitud?.toFixed(4) }}</p>
+                <p>Latitud: {{ lectura.latitud?.toFixed(4) }}</p>
+                <p>Longitud: {{ lectura.longitud?.toFixed(4) }}</p>
               </ion-text>
             </ion-col>
           </ion-row>
@@ -56,8 +56,8 @@
       </ion-card-header>
       <ion-card-content>
         <ion-item>
-          <ion-label position="floating">Valor en kWh *</ion-label>
-          <ion-input type="number" [(ngModel)]="lectura.valor_medidor" placeholder="Ejemplo: 12345" min="0"></ion-input>
+          <ion-label position="floating">Valor en kWh (Ejm: 12345):</ion-label>
+          <ion-input type="number" [(ngModel)]="lectura.valor_medidor" placeholder="" min="0"></ion-input>
         </ion-item>
       </ion-card-content>
     </ion-card>
@@ -70,9 +70,9 @@
       </ion-card-header>
       <ion-card-content>
         <ion-item>
-          <ion-label position="floating">Observaciones (opcional)</ion-label>
+          <ion-label position="floating">Observaciones:</ion-label>
           <ion-textarea [(ngModel)]="lectura.observaciones" rows="4"
-            placeholder="Agrega cualquier observación relevante sobre la lectura..."></ion-textarea>
+            placeholder=""></ion-textarea>
         </ion-item>
       </ion-card-content>
     </ion-card>
@@ -97,26 +97,12 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Instrucciones -->
-    <ion-card color="light">
-      <ion-card-content>
-        <ion-text color="medium">
-          <p><strong>Instrucciones:</strong></p>
-          <p>1. Ingresa el valor exacto del medidor</p>
-          <p>2. Agrega observaciones si es necesario</p>
-          <p>3. Toma una foto de la fachada de la casa</p>
-          <p>4. Guarda la lectura completa</p>
-        </ion-text>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Botones de Acción -->
     <ion-grid>
       <ion-row>
         <ion-col size="12">
           <ion-button expand="block" color="success" size="large" (click)="guardarLectura()">
             <ion-icon slot="start" name="save"></ion-icon>
-            Guardar Lectura Completa
+            Guardar Registro
           </ion-button>
         </ion-col>
       </ion-row>
@@ -124,7 +110,7 @@
         <ion-col size="12">
           <ion-button expand="block" fill="outline" color="medium" (click)="volverAPaso1()">
             <ion-icon slot="start" name="arrow-back"></ion-icon>
-            Volver al Paso 1
+            Volver a Capturar Datos
           </ion-button>
         </ion-col>
       </ion-row>

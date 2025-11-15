@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Registrar Lectura - Paso 1</ion-title>
+    <ion-title>Capturar Datos</ion-title>
     <ion-button slot="end" color="danger" (click)="confirmarCerrarSesion()">
       <ion-icon slot="icon-only" name="log-out"></ion-icon>
     </ion-button>
@@ -13,10 +13,11 @@
       <ion-card-content>
         <ion-text color="medium">
           <p><strong>Usuario:</strong> {{ userEmail }}</p>
-          <p><strong>Paso 1:</strong> Foto del medidor y ubicación GPS</p>
+          <p><strong>Funcion:</strong> Foto del medidor y ubicación GPS</p>
         </ion-text>
       </ion-card-content>
     </ion-card>
+
     <ion-card>
       <ion-card-header>
         <ion-card-title>
@@ -37,6 +38,7 @@
         </div>
       </ion-card-content>
     </ion-card>
+
     <ion-card>
       <ion-card-header>
         <ion-card-title>
@@ -49,6 +51,7 @@
           <ion-icon slot="start" name="locate"></ion-icon>
           {{ ubicacionObtenida ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
         </ion-button>
+
         <div *ngIf="ubicacionObtenida" class="location-info ion-margin-top">
           <h4>Ubicación Registrada</h4>
           <p>Latitud: {{ lectura.latitud }}</p>
@@ -60,36 +63,10 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card color="light">
-      <ion-card-content>
-        <ion-text color="medium">
-          <p><strong>Instrucciones:</strong></p>
-          <p>1. Toma una foto clara del medidor</p>
-          <p>2. Obtén tu ubicación GPS actual</p>
-          <p>3. Continúa al paso 2 para completar el registro</p>
-        </ion-text>
-      </ion-card-content>
-    </ion-card>
-
     <ion-button expand="block" color="success" size="large" (click)="continuarATab3()" class="ion-margin-top">
       <ion-icon slot="start" name="arrow-forward"></ion-icon>
-      Continuar al Paso 2
+      continuar..
     </ion-button>
 
-    <!-- Botón para obtener ubicación -->
-    <ion-button expand="block" (click)="obtenerUbicacion()" [color]="ubicacionObtenida ? 'success' : 'primary'"
-      class="ion-margin-top">
-      <ion-icon slot="start" [name]="ubicacionObtenida ? 'checkmark-circle' : 'locate'"></ion-icon>
-      {{ ubicacionObtenida ? 'Ubicación Obtenida' : 'Obtener Ubicación' }}
-    </ion-button>
-
-    <div *ngIf="ubicacionObtenida" class="location-info ion-margin-top">
-      <h4>Ubicación Registrada</h4>
-      <p>Latitud: {{ lectura.latitud }}</p>
-      <p>Longitud: {{ lectura.longitud }}</p>
-      <ion-button size="small" fill="outline" (click)="verEnMapa()">
-        Ver en Google Maps
-      </ion-button>
-    </div>
   </div>
 </ion-content>
