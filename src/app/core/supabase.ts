@@ -164,7 +164,7 @@ export class SupabaseService {
       .single();
     
     if (userError || !userData) {
-      console.log('⚠️ Usuario no existe en tabla users, creándolo...');
+      console.log('Usuario no existe en tabla users, creándolo...');
       const currentUser = await this.getCurrentUser();
       
       if (currentUser) {
@@ -186,12 +186,12 @@ export class SupabaseService {
           throw new Error('No se pudo crear el usuario en la tabla users');
         }
         
-        console.log('✅ Usuario creado:', newUser);
+        console.log('Usuario creado:', newUser);
       } else {
         throw new Error('No se pudo obtener el usuario actual');
       }
     } else {
-      console.log('✅ Usuario encontrado:', userData);
+      console.log('Usuario encontrado:', userData);
     }
 
     // Insertar la lectura
@@ -212,11 +212,11 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      console.error('Error al insertar lectura:', error);
+      console.error('Error al insertar datos:', error);
       throw error;
     }
     
-    console.log('✅ Lectura guardada:', data);
+    console.log('Datos guardados:', data);
     return data;
   }
 
