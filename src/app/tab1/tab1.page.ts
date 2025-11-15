@@ -84,6 +84,7 @@ export class Tab1Page implements OnInit {
   lecturas: Lectura[] = [];
   lecturasFiltradas: Lectura[] = [];
   userRole: string | null = null;
+  userEmail: string = '';
   searchTerm = '';
 
   constructor(
@@ -92,33 +93,41 @@ export class Tab1Page implements OnInit {
     private loadingController: LoadingController,
     private toastController: ToastController
   ) {
-    addIcons({ logOut, locationOutline, calendarOutline, personOutline });
+    addIcons({ personOutline, logOut, calendarOutline, locationOutline });
   }
 
   async ngOnInit() {
-    await this.verificarRolYCargarDatos();
+    await this.verificarRol();
+    await this.cargarLecturas();
   }
 
-  async verificarRolYCargarDatos() {
+  async verificarRol() {
+    try {
+      const userData = await this.supabaseService.getUserRole();
+      this.userRole = userData?.role || null;
+      this.userEmail = userData?.email || '';
+      console.log('Rol del usuario:', this.userRole);
+      console.log('Email del usuario:', this.userEmail);
+    } catch (error) {
+      console.error('Error al obtener el rol:', error);
+    }
+  }
+
+  async cargarLecturas() {
     const loading = await this.loadingController.create({
-      message: 'Cargando datos...'
+      message: 'Cargando registros...'
     });
     await loading.present();
 
     try {
-      this.userRole = await this.supabaseService.getCurrentUserRole();
-
-      if (this.userRole !== 'administrador') {
-        await loading.dismiss();
-        await this.showToast('Acceso denegado. Solo administradores pueden acceder', 'danger');
-        this.router.navigate(['/tabs/tab2']);
-        return;
+      if (this.userRole === 'administrador') {
+        await this.cargarTodasLasLecturas();
+      } else {
+        await this.cargarLecturasPropias();
       }
-
-      await this.cargarTodasLasLecturas();
     } catch (error) {
-      console.error('Error:', error);
-      await this.showToast('Error al cargar los datos', 'danger');
+      console.error('Error al cargar lecturas:', error);
+      await this.showToast('Error al cargar las lecturas', 'danger');
     } finally {
       await loading.dismiss();
     }
@@ -127,9 +136,9 @@ export class Tab1Page implements OnInit {
   async cargarTodasLasLecturas() {
     try {
       const data = await this.supabaseService.getTodasLasLecturas();
-      
-      console.log('Datos cargados:', data);
-      
+
+      console.log('📊 Lecturas cargadas (Admin):', data);
+
       this.lecturas = data.map((lectura: any) => ({
         id: lectura.id,
         user_id: lectura.user_id,
@@ -144,58 +153,81 @@ export class Tab1Page implements OnInit {
         fecha_creacion: lectura.created_at,
         profiles: lectura.users
       }));
-      
+
       this.lecturasFiltradas = [...this.lecturas];
-      console.log('Datos procesados:', this.lecturasFiltradas);
-      
+      console.log('Lecturas procesadas (Admin):', this.lecturasFiltradas);
+
     } catch (error) {
-      console.error('Error al cargar los datos:', error);
-      await this.showToast('Error al cargar los datos', 'danger');
+      console.error('Error al cargar todas las lecturas:', error);
+      await this.showToast('Error al cargar las lecturas', 'danger');
+    }
+  }
+
+  async cargarLecturasPropias() {
+    try {
+      const userId = this.supabaseService.userId;
+      if (!userId) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      const data = await this.supabaseService.getLecturasPorUsuario(userId);
+
+      console.log('Mis lecturas cargadas (Medidor):', data);
+
+      this.lecturas = data.map((lectura: any) => ({
+        id: lectura.id,
+        user_id: lectura.user_id,
+        usuario_email: this.userEmail,
+        valor_medidor: lectura.meter_value,
+        observaciones: lectura.observations || 'Sin observaciones',
+        foto_medidor: lectura.meter_photo_url,
+        foto_fachada: lectura.facade_photo_url,
+        latitud: lectura.latitude,
+        longitud: lectura.longitude,
+        created_at: lectura.created_at,
+        fecha_creacion: lectura.created_at,
+        profiles: {
+          email: this.userEmail,
+          role: 'medidor'
+        }
+      }));
+
+      this.lecturasFiltradas = [...this.lecturas];
+      console.log('Mis lecturas procesadas (Medidor):', this.lecturasFiltradas);
+
+    } catch (error) {
+      console.error('Error al cargar mis lecturas:', error);
+      await this.showToast('Error al cargar tus lecturas', 'danger');
     }
   }
 
   buscarLecturas(event: any) {
     const searchTerm = event.target.value?.toLowerCase().trim() || '';
-    
-    console.log('🔍 Buscando:', searchTerm);
-    
-    // Si el término de búsqueda está vacío, mostrar todas las lecturas
+
     if (!searchTerm || searchTerm === '') {
       this.lecturasFiltradas = [...this.lecturas];
-      console.log('✅ Mostrando todas las lecturas:', this.lecturasFiltradas.length);
       return;
     }
 
-    // Filtrar por email del usuario (medidor)
     this.lecturasFiltradas = this.lecturas.filter(lectura => {
-      const email = (lectura.profiles?.email || lectura.usuario_email || '').toLowerCase();
-      const observaciones = (lectura.observaciones || '').toLowerCase();
-      const valor = (lectura.valor_medidor || '').toString();
-      
-      const coincide = email.includes(searchTerm) || 
-                       observaciones.includes(searchTerm) || 
-                       valor.includes(searchTerm);
-      
-      return coincide;
+      if (this.userRole === 'administrador') {
+        const email = lectura.profiles?.email?.toLowerCase() || lectura.usuario_email?.toLowerCase() || '';
+        return email.includes(searchTerm);
+      } else {
+        const valor = lectura.valor_medidor?.toString() || '';
+        const observaciones = lectura.observaciones?.toLowerCase() || '';
+        return valor.includes(searchTerm) || observaciones.includes(searchTerm);
+      }
     });
-    
-    console.log('✅ Resultados filtrados:', this.lecturasFiltradas.length);
-    
-    // Mostrar mensaje si no hay resultados
-    if (this.lecturasFiltradas.length === 0) {
-      this.showToast(`No se encontraron resultados para "${searchTerm}"`, 'warning');
-    }
   }
 
-  // Método adicional para limpiar búsqueda
   limpiarBusqueda() {
     this.searchTerm = '';
     this.lecturasFiltradas = [...this.lecturas];
-    console.log('🔄 Búsqueda limpiada, mostrando todos los registros');
   }
 
   async refrescarLecturas(event: any) {
-    await this.cargarTodasLasLecturas();
+    await this.cargarLecturas();
     event.target.complete();
   }
 
@@ -218,7 +250,7 @@ export class Tab1Page implements OnInit {
     await toast.present();
   }
 
-  async logout() {
+  async cerrarSesion() {
     await this.supabaseService.signOut();
     localStorage.clear();
     sessionStorage.clear();

@@ -238,17 +238,58 @@ export class SupabaseService {
     return data;
   }
 
-  // Obtener todas las lecturas (solo administradores)
+  // Obtener el rol del usuario actual
+  async getUserRole() {
+    try {
+      const user = await this.getCurrentUser();
+      if (!user) return null;
+
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('id, email, role')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error al obtener rol del usuario:', error);
+      return null;
+    }
+  }
+
+  // Obtener todas las lecturas (para admin)
   async getTodasLasLecturas() {
     const { data, error } = await this.supabase
       .from('readings')
       .select(`
         *,
-        users:user_id (email, role)
+        users (
+          email,
+          role
+        )
       `)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
+  }
+
+  // Obtener lecturas de un usuario específico (para medidor)
+  async getLecturasPorUsuario(userId: string) {
+    const { data, error } = await this.supabase
+      .from('readings')
+      .select(`
+        *,
+        users (
+          email,
+          role
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   }
 }

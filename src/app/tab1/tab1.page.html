@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Panel de Administrador</ion-title>
-    <ion-button slot="end" color="danger" (click)="logout()">
+    <ion-title>{{ userRole === 'administrador' ? 'Panel de Administrador' : 'Mis Lecturas' }}</ion-title>
+    <ion-button slot="end" color="danger" (click)="cerrarSesion()">
       <ion-icon slot="icon-only" name="log-out"></ion-icon>
     </ion-button>
   </ion-toolbar>
@@ -9,7 +9,7 @@
   <ion-toolbar>
     <ion-searchbar
       animated="true"
-      placeholder="Buscar por correo del medidor..."
+      [placeholder]="userRole === 'administrador' ? 'Buscar por correo del medidor...' : 'Buscar por número de medidor...'"
       [(ngModel)]="searchTerm"
       (ionInput)="buscarLecturas($event)"
       (ionClear)="limpiarBusqueda()"
