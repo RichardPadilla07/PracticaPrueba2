@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
@@ -15,61 +15,37 @@ import {
   IonLabel,
   IonButton,
   IonIcon,
-  IonSearchbar,
-  IonSelect,
-  IonSelectOption,
-  IonRefresher,
-  IonRefresherContent,
+  IonInput,
+  IonTextarea,
   IonGrid,
   IonRow,
   IonCol,
   IonImg,
   IonText,
-  IonBadge,
-  IonChip,
   LoadingController,
   ToastController,
-  ModalController,
-  AlertController
+  AlertController,
+  ActionSheetController
 } from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import {
-  calendar,
-  location,
-  person,
-  refresh,
-  logOut,
-  filter,
-  search,
-  eye,
-  map,
-  water,
-  home,
-  camera,
-  informationCircle
-} from 'ionicons/icons';
 import { SupabaseService } from '../core/supabase';
+import { addIcons } from 'ionicons';
+import { logOut, camera, home, save, arrowBack, checkmarkCircle, speedometer, documentText } from 'ionicons/icons';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
-interface Lectura {
-  id: string;
-  user_id: string;
+interface LecturaCompleta {
   foto_medidor: string;
   foto_fachada: string;
-  valor_medidor: number;
+  valor_medidor: number | null;
   observaciones: string;
   latitud: number;
   longitud: number;
-  created_at: string;
-  profiles?: {
-    email: string;
-    role: string;
-  };
 }
 
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
   styleUrls: ['tab3.page.scss'],
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -85,254 +61,268 @@ interface Lectura {
     IonLabel,
     IonButton,
     IonIcon,
-    IonSearchbar,
-    IonSelect,
-    IonSelectOption,
-    IonRefresher,
-    IonRefresherContent,
+    IonInput,
+    IonTextarea,
     IonGrid,
     IonRow,
     IonCol,
     IonImg,
-    IonText,
-    IonBadge,
-    IonChip
+    IonText
   ],
 })
 export class Tab3Page implements OnInit {
-  lecturas: Lectura[] = [];
-  lecturasFiltradas: Lectura[] = [];
-  userRole: string | null = null;
-  userEmail = '';
-  
-  // Filtros
-  searchTerm = '';
-  ordenamiento: 'recientes' | 'antiguos' | 'valor_asc' | 'valor_desc' = 'recientes';
+  lectura: LecturaCompleta = {
+    foto_medidor: '',
+    foto_fachada: '',
+    valor_medidor: null,
+    observaciones: '',
+    latitud: 0,
+    longitud: 0
+  };
 
-  isLoading = false;
+  userEmail = '';
+  userRole: string | null = null;
+  datosParte1Cargados = false;
 
   constructor(
     private supabaseService: SupabaseService,
     private loadingController: LoadingController,
     private toastController: ToastController,
-    private modalController: ModalController,
     private alertController: AlertController,
+    private actionSheetController: ActionSheetController,
     private router: Router
   ) {
-    addIcons({
-      calendar,
-      location,
-      person,
-      refresh,
-      logOut,
-      filter,
-      search,
-      eye,
-      map,
-      water,
-      home,
-      camera,
-      informationCircle
-    });
+    addIcons({ logOut, camera, home, save, arrowBack, checkmarkCircle, speedometer, documentText });
   }
 
   async ngOnInit() {
-    // Verificar autenticación y obtener rol
-    this.supabaseService.user$.subscribe(async (user) => {
-      if (!user) {
-        this.router.navigate(['/tabs/tab1']);
-      } else {
-        this.userEmail = user.email || '';
-        await this.cargarRolYLecturas();
-      }
-    });
+    await this.verificarRol();
+    await this.cargarDatosUsuario();
+    this.cargarDatosParte1();
   }
 
-  async cargarRolYLecturas() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando lecturas...',
-    });
-    await loading.present();
-
-    try {
-      // Obtener rol del usuario
-      this.userRole = await this.supabaseService.getCurrentUserRole();
-      
-      // Cargar lecturas según el rol
-      await this.cargarLecturas();
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
-      await this.showToast('Error al cargar las lecturas', 'danger');
-    } finally {
-      await loading.dismiss();
+  async verificarRol() {
+    this.userRole = await this.supabaseService.getCurrentUserRole();
+    
+    if (this.userRole === 'administrador') {
+      await this.showToast('Los administradores no pueden registrar lecturas', 'warning');
+      this.router.navigate(['/tabs/tab1']);
     }
   }
 
-  async cargarLecturas() {
-    try {
-      if (this.userRole === 'administrador') {
-        // Administradores ven todas las lecturas
-        this.lecturas = await this.supabaseService.getTodasLasLecturas();
-      } else {
-        // Medidores solo ven sus propias lecturas
-        this.lecturas = await this.supabaseService.getMisLecturas();
-      }
-      
-      this.aplicarFiltros();
-    } catch (error) {
-      console.error('Error al cargar lecturas:', error);
-      throw error;
+  async cargarDatosUsuario() {
+    const user = await this.supabaseService.getCurrentUser();
+    this.userEmail = user?.email || '';
+  }
+
+  cargarDatosParte1() {
+    const datos = localStorage.getItem('lecturaParte1');
+    if (datos) {
+      const parte1 = JSON.parse(datos);
+      this.lectura.foto_medidor = parte1.foto_medidor;
+      this.lectura.latitud = parte1.latitud;
+      this.lectura.longitud = parte1.longitud;
+      this.datosParte1Cargados = true;
+    } else {
+      this.showToast('Debes completar el paso 1 primero', 'warning');
+      this.router.navigate(['/tabs/tab2']);
     }
   }
 
-  async refrescarLecturas(event?: any) {
-    try {
-      await this.cargarLecturas();
-      await this.showToast('Lecturas actualizadas', 'success');
-    } catch (error) {
-      console.error('Error al refrescar:', error);
-      await this.showToast('Error al actualizar', 'danger');
-    } finally {
-      if (event) {
-        event.target.complete();
-      }
-    }
-  }
-
-  aplicarFiltros() {
-    let resultado = [...this.lecturas];
-
-    // Aplicar búsqueda por texto
-    if (this.searchTerm.trim()) {
-      const termino = this.searchTerm.toLowerCase();
-      resultado = resultado.filter(lectura => 
-        lectura.valor_medidor.toString().includes(termino) ||
-        lectura.observaciones.toLowerCase().includes(termino) ||
-        (lectura.profiles?.email || '').toLowerCase().includes(termino) ||
-        this.formatearFecha(lectura.created_at).toLowerCase().includes(termino)
-      );
-    }
-
-    // Aplicar ordenamiento
-    switch (this.ordenamiento) {
-      case 'recientes':
-        resultado.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        break;
-      case 'antiguos':
-        resultado.sort((a, b) => 
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-        break;
-      case 'valor_asc':
-        resultado.sort((a, b) => a.valor_medidor - b.valor_medidor);
-        break;
-      case 'valor_desc':
-        resultado.sort((a, b) => b.valor_medidor - a.valor_medidor);
-        break;
-    }
-
-    this.lecturasFiltradas = resultado;
-  }
-
-  buscar(event: any) {
-    this.searchTerm = event.target.value || '';
-    this.aplicarFiltros();
-  }
-
-  cambiarOrdenamiento(event: any) {
-    this.ordenamiento = event.detail.value;
-    this.aplicarFiltros();
-  }
-
-  abrirEnMaps(latitud: number, longitud: number) {
-    const url = `https://www.google.com/maps?q=${latitud},${longitud}`;
-    window.open(url, '_system');
-  }
-
-  async verDetalles(lectura: Lectura) {
-    const alert = await this.alertController.create({
-      header: 'Detalles de la Lectura',
-      message: `
-        <div style="text-align: left;">
-          <p><strong>Valor:</strong> ${lectura.valor_medidor}</p>
-          <p><strong>Fecha:</strong> ${this.formatearFecha(lectura.created_at)}</p>
-          <p><strong>Hora:</strong> ${this.formatearHora(lectura.created_at)}</p>
-          ${this.userRole === 'administrador' ? `<p><strong>Registrado por:</strong> ${lectura.profiles?.email || 'N/A'}</p>` : ''}
-          <p><strong>Coordenadas:</strong><br>
-          Lat: ${lectura.latitud.toFixed(6)}<br>
-          Lon: ${lectura.longitud.toFixed(6)}</p>
-          ${lectura.observaciones ? `<p><strong>Observaciones:</strong><br>${lectura.observaciones}</p>` : ''}
-        </div>
-      `,
+  async seleccionarFotoFachada() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Seleccionar imagen',
       buttons: [
         {
-          text: 'Ver en Maps',
+          text: 'Tomar foto',
+          icon: 'camera',
           handler: () => {
-            this.abrirEnMaps(lectura.latitud, lectura.longitud);
+            this.tomarFoto();
           }
         },
         {
-          text: 'Cerrar',
+          text: 'Galería',
+          icon: 'images',
+          handler: () => {
+            this.seleccionarDeGaleria();
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
           role: 'cancel'
         }
       ]
     });
-
-    await alert.present();
+    await actionSheet.present();
   }
 
-  async verImagen(url: string, tipo: string) {
+  async tomarFoto() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera
+      });
+
+      this.lectura.foto_fachada = image.dataUrl || '';
+    } catch (error) {
+      console.error('Error al tomar foto:', error);
+      await this.showToast('Error al tomar la foto', 'danger');
+    }
+  }
+
+  async seleccionarDeGaleria() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Photos
+      });
+
+      this.lectura.foto_fachada = image.dataUrl || '';
+    } catch (error) {
+      console.error('Error al seleccionar imagen:', error);
+      await this.showToast('Error al seleccionar la imagen', 'danger');
+    }
+  }
+
+  async guardarLectura() {
+    if (!this.validarFormulario()) {
+      return;
+    }
+
     const alert = await this.alertController.create({
-      header: `Foto ${tipo}`,
-      message: `<img src="${url}" style="width: 100%; border-radius: 8px;">`,
-      cssClass: 'image-alert',
-      buttons: ['Cerrar']
-    });
-
-    await alert.present();
-  }
-
-  formatearFecha(fecha: string): string {
-    const date = new Date(fecha);
-    return date.toLocaleDateString('es-EC', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-
-  formatearHora(fecha: string): string {
-    const date = new Date(fecha);
-    return date.toLocaleTimeString('es-EC', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  obtenerUrlMaps(latitud: number, longitud: number): string {
-    return `https://www.google.com/maps?q=${latitud},${longitud}`;
-  }
-
-  async confirmarCerrarSesion() {
-    const alert = await this.alertController.create({
-      header: 'Cerrar Sesión',
-      message: '¿Estás seguro de que deseas cerrar sesión?',
+      header: 'Confirmar Registro',
+      message: '¿Estás seguro de guardar esta lectura?',
       buttons: [
         {
           text: 'Cancelar',
           role: 'cancel'
         },
         {
-          text: 'Cerrar Sesión',
+          text: 'Guardar',
           handler: async () => {
-            await this.cerrarSesion();
+            await this.procesarGuardado();
           }
         }
       ]
     });
+    await alert.present();
+  }
 
+  async procesarGuardado() {
+    const loading = await this.loadingController.create({
+      message: 'Guardando lectura...'
+    });
+    await loading.present();
+
+    try {
+      const userId = this.supabaseService.userId;
+      if (!userId) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      // Subir foto del medidor
+      const fotoMedidorBlob = await this.dataURLtoBlob(this.lectura.foto_medidor);
+      const urlFotoMedidor = await this.supabaseService.uploadImage(fotoMedidorBlob, userId, 'medidor');
+
+      // Subir foto de la fachada
+      const fotoFachadaBlob = await this.dataURLtoBlob(this.lectura.foto_fachada);
+      const urlFotoFachada = await this.supabaseService.uploadImage(fotoFachadaBlob, userId, 'fachada');
+
+      // Crear registro de lectura
+      await this.supabaseService.createLectura({
+        foto_medidor: urlFotoMedidor,
+        foto_fachada: urlFotoFachada,
+        valor_medidor: this.lectura.valor_medidor!,
+        observaciones: this.lectura.observaciones,
+        latitud: this.lectura.latitud,
+        longitud: this.lectura.longitud
+      });
+
+      await loading.dismiss();
+      await this.showToast('Lectura guardada exitosamente', 'success');
+      
+      // Limpiar datos del localStorage
+      localStorage.removeItem('lecturaParte1');
+      
+      // Volver al tab2
+      this.router.navigate(['/tabs/tab2']);
+      this.limpiarFormulario();
+      
+    } catch (error: any) {
+      await loading.dismiss();
+      console.error('Error al guardar:', error);
+      await this.showToast(error.message || 'Error al guardar la lectura', 'danger');
+    }
+  }
+
+  validarFormulario(): boolean {
+    if (!this.lectura.foto_fachada) {
+      this.showToast('Debes tomar la foto de la fachada', 'warning');
+      return false;
+    }
+
+    if (!this.lectura.valor_medidor || this.lectura.valor_medidor <= 0) {
+      this.showToast('Ingresa un valor válido del medidor', 'warning');
+      return false;
+    }
+
+    return true;
+  }
+
+  limpiarFormulario() {
+    this.lectura = {
+      foto_medidor: '',
+      foto_fachada: '',
+      valor_medidor: null,
+      observaciones: '',
+      latitud: 0,
+      longitud: 0
+    };
+    this.datosParte1Cargados = false;
+  }
+
+  async dataURLtoBlob(dataURL: string): Promise<Blob> {
+    const response = await fetch(dataURL);
+    return await response.blob();
+  }
+
+  volverAPaso1() {
+    localStorage.removeItem('lecturaParte1');
+    this.router.navigate(['/tabs/tab2']);
+  }
+
+  async showToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: 'top',
+      color
+    });
+    await toast.present();
+  }
+
+  async confirmarCerrarSesion() {
+    const alert = await this.alertController.create({
+      header: 'Cerrar Sesión',
+      message: '¿Estás seguro de que deseas cerrar sesión? Se perderán los datos no guardados.',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Salir',
+          handler: () => {
+            this.cerrarSesion();
+          }
+        }
+      ]
+    });
     await alert.present();
   }
 
@@ -347,15 +337,5 @@ export class Tab3Page implements OnInit {
       console.error('Error al cerrar sesión:', error);
       await this.showToast('Error al cerrar sesión', 'danger');
     }
-  }
-
-  async showToast(message: string, color: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'top',
-      color
-    });
-    await toast.present();
   }
 }
